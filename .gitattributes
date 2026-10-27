@@ -1,0 +1,30 @@
+# Normalise line endings in the repository; check out native to the OS.
+* text=auto
+
+# Source files
+*.cs     text diff=csharp
+*.csproj text
+*.slnx   text
+*.props  text
+*.json   text
+*.ts     text
+*.js     text
+*.html   text
+*.css    text
+*.scss   text
+*.md     text
+*.http   text
+*.yml    text
+*.sql    text
+
+# Binary — never normalise
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.svg  text
+*.pdf  binary
+*.db   binary
+*.woff  binary
+*.woff2 binary

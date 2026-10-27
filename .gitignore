@@ -1,0 +1,55 @@
+# ─────────── .NET build output ───────────
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+publish/
+artifacts/
+
+# ─────────── Visual Studio / Rider ───────────
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# ─────────── Node / Angular ───────────
+node_modules/
+.angular/
+dist/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─────────── Tests / coverage ───────────
+[Tt]est[Rr]esult*/
+coverage/
+*.coverage
+*.trx
+
+# ─────────── Local dev databases (recreate with EF migrations) ───────────
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+
+# ─────────── Secrets / local config ───────────
+appsettings.Local.json
+appsettings.*.Local.json
+secrets.json
+.env
+.env.local
+
+# ─────────── Uploaded / generated content ───────────
+wwwroot/uploads/
+Uploads/
+
+# ─────────── OS cruft ───────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

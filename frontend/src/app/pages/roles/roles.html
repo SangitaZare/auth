@@ -1,0 +1,61 @@
+<h2>Roles &amp; permissions</h2>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+@if (notice()) {
+  <div class="alert" role="status">{{ notice() }}</div>
+}
+
+@if (loading()) {
+  <p class="muted">Loading…</p>
+} @else if (!error()) {
+  <div class="split">
+    <div class="panel">
+      @for (r of roles(); track r.id) {
+        <button type="button" class="btn role" [class.on]="r.id === selectedId()" (click)="select(r.id)">
+          <span>{{ r.name }}</span>
+          <span class="count">{{ r.permissionIds.length }}</span>
+        </button>
+      }
+
+      <div class="new">
+        <label for="rn">New role</label>
+        <input #rn id="rn" type="text" maxlength="50" placeholder="Role name" (keydown.enter)="createRole(rn, rd)" />
+        <input #rd type="text" maxlength="200" placeholder="Description (optional)" aria-label="Role description"
+               (keydown.enter)="createRole(rn, rd)" />
+        <button type="button" class="btn" [disabled]="creating()" (click)="createRole(rn, rd)">Add role</button>
+      </div>
+    </div>
+
+    @if (selected(); as role) {
+      <div class="panel">
+        <h3>{{ role.name }}</h3>
+        @if (role.description) {
+          <p class="muted">{{ role.description }}</p>
+        }
+        @if (isAdmin()) {
+          <p class="muted">The Admin role cannot be changed, so nobody can lock themselves out.</p>
+        }
+
+        @for (p of permissions(); track p.id) {
+          <label class="perm">
+            <input #cb type="checkbox" [checked]="has(p.id)" [disabled]="isAdmin()" (change)="toggle(p, cb.checked)" />
+            <span>
+              <b>{{ p.name }}</b>
+              @if (p.description) {
+                <span class="muted">{{ p.description }}</span>
+              }
+            </span>
+          </label>
+        }
+
+        @if (!isAdmin()) {
+          <p class="muted hint">
+            Changes save as you tick them. People with this role get them within about 15 minutes or at their next sign in.
+          </p>
+        }
+      </div>
+    }
+  </div>
+}

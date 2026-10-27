@@ -1,0 +1,179 @@
+<div class="bar">
+  <select #sel aria-label="Project" (change)="selectProject(+sel.value)">
+    @for (p of projects(); track p.id) {
+      <option [value]="p.id" [selected]="p.id === projectId()">{{ p.name }}</option>
+    }
+  </select>
+
+  <div class="chips">
+    @if (canManage) {
+      <button type="button" class="btn" (click)="toggleAddProject()">
+        {{ addingProject() ? 'Cancel' : '+ New project' }}
+      </button>
+    }
+    @if (canManage && currentProject()) {
+      <button type="button" class="btn" [class.on]="managingMembers()" (click)="toggleMembers()">Members</button>
+      <button type="button" class="btn" [class.on]="editingProject()" (click)="toggleEditProject()">Edit project</button>
+    }
+    @if (canCreate) {
+      <button type="button" class="btn btn-primary add-btn" (click)="toggleAdd()">
+        {{ adding() ? 'Cancel' : '+ New task' }}
+      </button>
+    }
+    <button type="button" class="btn" [class.on]="!mine()" (click)="setMine(false)">All</button>
+    <button type="button" class="btn" [class.on]="mine()" (click)="setMine(true)">Assigned to me</button>
+  </div>
+</div>
+
+<div class="filters">
+  <input #q type="search" class="f-search" placeholder="Search tasks..." aria-label="Search tasks"
+         [value]="search()" (input)="search.set(q.value)" />
+
+  <select #pr class="f-select" aria-label="Filter by priority" (change)="setPriority(pr.value)">
+    <option value="" [selected]="priorityFilter() === ''">Any priority</option>
+    <option value="high" [selected]="priorityFilter() === 'high'">High</option>
+    <option value="medium" [selected]="priorityFilter() === 'medium'">Medium</option>
+    <option value="low" [selected]="priorityFilter() === 'low'">Low</option>
+  </select>
+
+  <select #tg class="f-select" aria-label="Filter by tag" (change)="tagFilter.set(tg.value)">
+    <option value="" [selected]="tagFilter() === ''">Any tag</option>
+    @for (tag of tags(); track tag) {
+      <option [value]="tag" [selected]="tagFilter() === tag">{{ tag }}</option>
+    }
+  </select>
+
+  <select #who class="f-select" aria-label="Filter by assignee" (change)="assigneeFilter.set(who.value)">
+    <option value="" [selected]="assigneeFilter() === ''">Anyone</option>
+    <option value="none" [selected]="assigneeFilter() === 'none'">Unassigned</option>
+    @for (a of assignees(); track a.id) {
+      <option [value]="a.id" [selected]="assigneeFilter() === '' + a.id">{{ a.name }}</option>
+    }
+  </select>
+
+  @if (filtersActive()) {
+    <button type="button" class="btn" (click)="clearFilters()">Clear filters</button>
+    <span class="f-note">Dragging is paused while filters are on.</span>
+  }
+</div>
+
+@if (managingMembers() && currentProject(); as project) {
+  <div class="members">
+    <b>Members of {{ project.name }}</b>
+    <div class="member-list">
+      @for (u of allUsers(); track u.id) {
+        @if (u.isActive) {
+          <label class="member">
+            <input #cb type="checkbox" [checked]="isMember(u.id)" [disabled]="u.id === project.ownerId"
+                   (change)="toggleMember(u.id, cb.checked)" />
+            {{ u.fullName }}
+            @if (u.id === project.ownerId) {
+              <span class="f-note">(owner)</span>
+            }
+          </label>
+        }
+      }
+    </div>
+    <span class="f-note">Changes save as you tick them. Removing someone also unassigns their tasks here.</span>
+  </div>
+}
+
+@if (editingProject() && currentProject(); as project) {
+  <div class="members">
+    <b>Edit {{ project.name }}</b>
+    <div class="new-task">
+      <input #en type="text" maxlength="100" aria-label="Project name" [value]="project.name"
+             (keydown.enter)="saveProject(en, ed)" (keydown.escape)="editingProject.set(false)" />
+      <input #ed type="text" maxlength="300" placeholder="Description (optional)" aria-label="Project description"
+             [value]="project.description ?? ''" (keydown.enter)="saveProject(en, ed)" />
+      <button type="button" class="btn btn-primary" [disabled]="savingProject()" (click)="saveProject(en, ed)">Save</button>
+    </div>
+    <div class="danger">
+      <button type="button" class="btn btn-danger" [disabled]="deletingProject()" (click)="deleteProject()">
+        {{ confirmingDelete() ? 'Yes, delete the project and all its tasks' : 'Delete project' }}
+      </button>
+      @if (confirmingDelete()) {
+        <button type="button" class="btn" (click)="confirmingDelete.set(false)">Keep it</button>
+      }
+    </div>
+  </div>
+}
+
+@if (addingProject()) {
+  <div class="new-task">
+    <input #pn type="text" placeholder="Project name" maxlength="100" aria-label="New project name"
+           (keydown.enter)="createProject(pn, pd)" (keydown.escape)="addingProject.set(false)" />
+    <input #pd type="text" placeholder="Description (optional)" maxlength="300" aria-label="New project description"
+           (keydown.enter)="createProject(pn, pd)" />
+    <button type="button" class="btn btn-primary" [disabled]="creatingProject()" (click)="createProject(pn, pd)">Create project</button>
+  </div>
+}
+
+@if (adding()) {
+  <div class="new-task">
+    <input #nt type="text" placeholder="What needs to be done?" maxlength="200" aria-label="New task title"
+           (keydown.enter)="createTask(nt)" (keydown.escape)="adding.set(false)" />
+    <button type="button" class="btn btn-primary" [disabled]="creating()" (click)="createTask(nt)">Add to To do</button>
+  </div>
+}
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+@if (notice()) {
+  <div class="alert" role="status">{{ notice() }}</div>
+}
+
+@if (!loading() && !error() && projects().length === 0) {
+  @if (canManage) {
+    <p class="empty-page">There are no projects yet. Use "+ New project" to create one.</p>
+  } @else {
+    <p class="empty-page">You are not a member of any project yet. Ask an admin to add you.</p>
+  }
+} @else {
+  <div class="cols" [class.busy]="loading()">
+    @for (col of columns(); track col.key) {
+      <div class="col" [class.over]="overCol() === col.key"
+           (dragover)="onDragOver($event, col.key)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event, col.key)">
+        <h3>{{ col.label }} <span>{{ col.tasks.length }}</span></h3>
+
+        @for (t of col.tasks; track t.id) {
+          <article class="card" [draggable]="!filtersActive()" tabindex="0" [class.dragging]="draggingId() === t.id"
+                   (click)="openId.set(t.id)" (keydown.enter)="openId.set(t.id)"
+                   (dragstart)="onDragStart($event, t)" (dragend)="onDragEnd()">
+            <div class="r1">
+              @if (t.tag) {
+                <span class="tag" [style.--h]="tagHue(t.tag)">{{ t.tag }}</span>
+              } @else {
+                <span></span>
+              }
+              <i class="pd" [class.medium]="t.priority === 'medium'" [class.high]="t.priority === 'high'"
+                 [attr.title]="t.priority + ' priority'"></i>
+            </div>
+
+            <b>{{ t.title }}</b>
+
+            <div class="r2">
+              @if (t.dueDate) {
+                <span [class.late]="isLate(t)">{{ dueLabel(t.dueDate) }}</span>
+              }
+              @if (t.checklistTotal > 0) {
+                <span>{{ t.checklistDone }}/{{ t.checklistTotal }} done</span>
+              }
+              @if (t.commentCount > 0) {
+                <span>{{ t.commentCount }} {{ t.commentCount === 1 ? 'comment' : 'comments' }}</span>
+              }
+              <span class="av" [attr.title]="t.assigneeName ?? 'Unassigned'">{{ initials(t.assigneeName) }}</span>
+            </div>
+          </article>
+        } @empty {
+          <p class="empty">No tasks</p>
+        }
+      </div>
+    }
+  </div>
+}
+
+@if (openId(); as id) {
+  <app-task-drawer [taskId]="id" (closed)="openId.set(null)" (changed)="loadTasks(true)" />
+}

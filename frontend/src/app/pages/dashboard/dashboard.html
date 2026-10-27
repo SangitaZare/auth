@@ -1,0 +1,63 @@
+@if (auth.user(); as u) {
+  <h2>Welcome, {{ u.fullName.split(' ')[0] }}</h2>
+
+  @if (canSeeTasks()) {
+    @if (loading()) {
+      <p class="muted">Loading your tasks...</p>
+    } @else if (error()) {
+      <div class="err">
+        <span>{{ error() }}</span>
+        <button type="button" (click)="load()">Retry</button>
+      </div>
+    } @else {
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">My open tasks</div>
+          <div class="stat-value">{{ openCount() }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Overdue</div>
+          <div class="stat-value late">{{ overdueCount() }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">In review</div>
+          <div class="stat-value">{{ reviewCount() }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Done</div>
+          <div class="stat-value ok">{{ doneCount() }}</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>My tasks</h3>
+        @for (t of myTasks(); track t.id) {
+          <a class="task-row" routerLink="/board" [queryParams]="{ project: t.projectId, task: t.id }">
+            <span class="task-title">{{ t.title }}</span>
+            <span class="task-project">{{ projectName(t.projectId) }}</span>
+            @if (t.dueDate) {
+              <span class="task-due" [class.late]="isLate(t)">{{ dueLabel(t.dueDate) }}</span>
+            } @else {
+              <span class="task-due">No due date</span>
+            }
+          </a>
+        } @empty {
+          <p class="muted">Nothing is assigned to you right now.</p>
+        }
+      </div>
+    }
+  }
+
+  <div class="panel">
+    <h3>Your account</h3>
+    <p><b>Email:</b> {{ u.email }}</p>
+    <p><b>Roles:</b> {{ u.roles.join(', ') }}</p>
+  </div>
+
+  <div class="panel">
+    <h3>Your access</h3>
+    @for (p of u.permissions; track p) {
+      <span class="chip">{{ p }}</span>
+    }
+  </div>
+}

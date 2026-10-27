@@ -1,0 +1,143 @@
+<div class="overlay" (click)="closed.emit()"></div>
+
+<aside class="panel" role="dialog" aria-modal="true" aria-label="Task details">
+  <div class="top">
+    <span class="muted">Task #{{ taskId() }}</span>
+    <button type="button" class="btn" (click)="closed.emit()" aria-label="Close">✕</button>
+  </div>
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (error()) {
+    <div class="alert" role="alert">{{ error() }}</div>
+  } @else if (detail(); as d) {
+    <h2>{{ d.task.title }}</h2>
+
+    @if (notice()) {
+      <div class="alert" role="status">{{ notice() }}</div>
+    }
+
+    <div class="grid">
+      <div>
+        <label for="status">Status</label>
+        <select #statusSel id="status" [disabled]="!canEdit" (change)="changeStatus(statusSel)">
+          @for (c of columns; track c.key) {
+            <option [value]="c.key" [selected]="c.key === d.task.status">{{ c.label }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="assignee">Assignee</label>
+        @if (canAssign) {
+          <select #assigneeSel id="assignee" (change)="changeAssignee(assigneeSel)">
+            <option value="" [selected]="d.task.assigneeId === null">Unassigned</option>
+            @for (m of members(); track m.id) {
+              <option [value]="m.id" [selected]="m.id === d.task.assigneeId">{{ m.fullName }}</option>
+            }
+          </select>
+        } @else {
+          <p class="static">{{ d.task.assigneeName ?? 'Unassigned' }}</p>
+        }
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <label for="title">Title</label>
+      <input id="title" type="text" formControlName="title" maxlength="200" />
+      @if (form.controls.title.touched && form.controls.title.invalid) {
+        <small class="field-error">Title is required.</small>
+      }
+
+      <div class="grid">
+        <div>
+          <label for="priority">Priority</label>
+          <select id="priority" formControlName="priority">
+            @for (p of priorities; track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="due">Due date</label>
+          <input id="due" type="date" formControlName="dueDate" />
+        </div>
+      </div>
+
+      <label for="tag">Tag</label>
+      <input id="tag" type="text" formControlName="tag" maxlength="30" placeholder="For example: Design" />
+
+      <label for="desc">Description</label>
+      <textarea id="desc" rows="4" formControlName="description" maxlength="2000"></textarea>
+
+      @if (canEdit) {
+        <div class="save-row">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? 'Saving…' : 'Save changes' }}
+          </button>
+          @if (saved()) {
+            <span class="saved" role="status">Changes saved.</span>
+          }
+        </div>
+      }
+    </form>
+
+    <h3>Checklist ({{ d.task.checklistDone }}/{{ d.task.checklistTotal }})</h3>
+    @if (d.task.checklistTotal > 0) {
+      <div class="track">
+        <i [style.width.%]="(d.task.checklistDone / d.task.checklistTotal) * 100"></i>
+      </div>
+    }
+    @for (item of d.checklist; track item.id) {
+      <div class="item">
+        <label class="check">
+          <input #cb type="checkbox" [checked]="item.done" [disabled]="!canEdit" (change)="toggle(item, cb.checked)" />
+          <span [class.done]="item.done">{{ item.text }}</span>
+        </label>
+        @if (canEdit) {
+          <button type="button" class="icon" (click)="removeItem(item)" [attr.aria-label]="'Remove ' + item.text">✕</button>
+        }
+      </div>
+    } @empty {
+      <p class="muted">No checklist.</p>
+    }
+    @if (canEdit) {
+      <div class="add">
+        <input #ci type="text" placeholder="Add a checklist item" maxlength="200" (keydown.enter)="addItem(ci)" />
+        <button type="button" class="btn" (click)="addItem(ci)">Add</button>
+      </div>
+    }
+
+    <h3>Comments</h3>
+    @for (c of d.comments; track c.id) {
+      <div class="comment">
+        <div class="comment-head">
+          <span><b>{{ c.authorName }}</b> <span class="muted">{{ c.createdAt | date: 'd MMM, h:mm a' }}</span></span>
+          @if (canDeleteComment(c)) {
+            <button type="button" class="icon" (click)="removeComment(c)" aria-label="Delete comment">✕</button>
+          }
+        </div>
+        <p>{{ c.text }}</p>
+      </div>
+    } @empty {
+      <p class="muted">No comments yet.</p>
+    }
+    @if (canEdit) {
+      <div class="add">
+        <input #cm type="text" placeholder="Write a comment" maxlength="1000" (keydown.enter)="addComment(cm)" />
+        <button type="button" class="btn btn-primary" (click)="addComment(cm)">Send</button>
+      </div>
+    }
+
+    @if (canDelete) {
+      <div class="danger-zone">
+        @if (confirmingDelete()) {
+          <p>Delete this task with its checklist and comments? This cannot be undone.</p>
+          <button type="button" class="btn danger" (click)="remove()">Yes, delete</button>
+          <button type="button" class="btn" (click)="confirmingDelete.set(false)">Keep it</button>
+        } @else {
+          <button type="button" class="btn danger" (click)="confirmingDelete.set(true)">Delete task</button>
+        }
+      </div>
+    }
+  }
+</aside>

@@ -1,0 +1,33 @@
+<div class="shell">
+  <aside>
+    <div class="logo">TaskNest</div>
+    <nav aria-label="Main">
+      @for (item of menu.items(); track item.route) {
+        <a [routerLink]="item.route" routerLinkActive="on">{{ item.title }}</a>
+      }
+      @if (menu.error()) {
+        <p class="menu-error">
+          {{ menu.error() }}
+          <button type="button" class="link" (click)="menu.load()">Try again</button>
+        </p>
+      }
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header>
+      @if (auth.user(); as u) {
+        <span class="who">
+          <b>{{ u.fullName }}</b>
+          @for (r of u.roles; track r) {
+            <i class="badge">{{ r }}</i>
+          }
+        </span>
+      }
+      <button type="button" class="btn" (click)="auth.logout()">Log out</button>
+    </header>
+    <section>
+      <router-outlet />
+    </section>
+  </div>
+</div>

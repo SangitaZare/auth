@@ -1,0 +1,75 @@
+<h2>Users</h2>
+
+<div class="bar">
+  <input #q type="search" placeholder="Search by name or email" aria-label="Search users"
+         [value]="search()" (input)="search.set(q.value)" />
+</div>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+@if (notice()) {
+  <div class="alert" role="status">{{ notice() }}</div>
+}
+
+@if (loading()) {
+  <p class="muted">Loading…</p>
+} @else if (!error()) {
+  <div class="panel">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Roles</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        @for (u of shown(); track u.id) {
+          <tr>
+            <td>
+              <b>{{ u.fullName }}</b>
+              @if (u.id === myId) {
+                <span class="you">You</span>
+              }
+            </td>
+            <td>{{ u.email }}</td>
+            <td>
+              @if (canManage) {
+                <div class="roles">
+                  @for (r of roles(); track r.id) {
+                    <label class="rolebox" [attr.title]="isLocked(u, r) ? 'You cannot remove your own Admin role' : null">
+                      <input #cb type="checkbox" [checked]="hasRole(u, r.id)" [disabled]="isLocked(u, r)"
+                             (change)="toggleRole(u, r, cb.checked)" />
+                      {{ r.name }}
+                    </label>
+                  }
+                </div>
+              } @else {
+                @for (n of u.roleNames; track n) {
+                  <span class="chip">{{ n }}</span>
+                } @empty {
+                  <span class="muted">No role</span>
+                }
+              }
+            </td>
+                      <td>
+              <span class="status" [class.off]="!u.isActive">{{ u.isActive ? 'Active' : 'Inactive' }}</span>
+              @if (canManage && u.id !== myId) {
+                <button type="button" class="btn small" (click)="toggleActive(u)">
+                  {{ u.isActive ? 'Deactivate' : 'Activate' }}
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4" class="muted">No users match your search.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (canManage) {
+    
+        <p class="muted hint">
+      Role changes save as you tick them. They reach the person within about 15 minutes or at their next sign in.
+      Deactivating a person signs them out and blocks sign in until you activate them again.
+    </p>
+  }
+}

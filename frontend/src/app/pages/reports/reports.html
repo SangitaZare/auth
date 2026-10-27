@@ -1,0 +1,25 @@
+<h2 class="title">Reports</h2>
+
+@if (loading()) {
+  <p class="muted">Loading reports...</p>
+} @else if (error()) {
+  <div class="error">
+    <span>{{ error() }}</span>
+    <button type="button" (click)="load()">Retry</button>
+  </div>
+} @else {
+  <div class="cards">
+    @for (item of items(); track item.name) {
+      <div class="card">
+        <div class="label">{{ item.name }}</div>
+        <div class="value">{{ item.value }}</div>
+        <div class="bar">
+          <div class="fill" [style.width.%]="percent(item.value)"></div>
+        </div>
+      </div>
+    } @empty {
+      <p class="muted">No report data yet.</p>
+    }
+  </div>
+  <p class="note">Bars compare each number with the largest one on this page.</p>
+}

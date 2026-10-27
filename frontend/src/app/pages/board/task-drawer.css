@@ -1,0 +1,30 @@
+.overlay { position: fixed; inset: 0; background: rgb(0 0 0 / .4); z-index: 10; }
+.panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(460px, 100%); background: var(--surface); border-left: 1px solid var(--border); padding: 20px; overflow-y: auto; z-index: 11; }
+.top { display: flex; justify-content: space-between; align-items: center; position: sticky; top: -20px; margin: -20px 0 8px; padding: 20px 0 8px; background: var(--surface); z-index: 1; }
+h2 { margin: 8px 0 14px; font-size: 20px; }
+h3 { margin: 20px 0 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+p { margin: 4px 0; }
+.muted { color: var(--muted); font-size: 12px; }
+.meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 0; }
+.meta dt { font-size: 12px; font-weight: 600; color: var(--muted); }
+.meta dd { margin: 2px 0 0; }
+.track { height: 6px; background: var(--bg); border-radius: 9px; overflow: hidden; margin-bottom: 8px; }
+.track i { display: block; height: 100%; background: var(--ok); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 400; color: var(--text); margin: 6px 0; }
+.check input { width: auto; }
+.done { text-decoration: line-through; color: var(--muted); }
+.comment { background: var(--bg); border-radius: 10px; padding: 8px 12px; margin-top: 8px; }
+.comment .muted { margin-left: 6px; }
+.item { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.icon { background: none; border: 0; color: var(--muted); cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.icon:hover { color: var(--bad); background: var(--bg); }
+.add { display: flex; gap: 8px; margin-top: 10px; }
+.comment-head { display: flex; justify-content: space-between; align-items: center; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.static { margin: 0; padding: 9px 0; }
+.save-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.saved { color: var(--ok); font-size: 13px; }
+textarea { resize: vertical; }
+.danger-zone { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.danger-zone p { width: 100%; margin: 0 0 4px; }
+.btn.danger { color: var(--bad); border-color: var(--bad); }
