@@ -48,6 +48,10 @@ secrets.json
 wwwroot/uploads/
 Uploads/
 
+# ─────────── Logs ───────────
+logs/
+*.log
+
 # ─────────── OS cruft ───────────
 .DS_Store
 Thumbs.db
